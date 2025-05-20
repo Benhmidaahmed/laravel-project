@@ -34,6 +34,9 @@ Route::middleware('api')->group(function() {
     // Routes appointments
     Route::post('/appointments', [AppointmentController::class, 'submit']);
     Route::get('/appointments', [AppointmentController::class, 'getAll']);
+    
+    Route::post('/messages/send', [MessageController::class, 'sendMessage']);
+Route::post('/messages/conversation', [MessageController::class, 'getConversation']);
 
     // Routes students
     Route::get('/users/students', [StudentController::class, 'getStudents']);
