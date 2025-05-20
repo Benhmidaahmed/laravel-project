@@ -13,8 +13,8 @@ class MessageController extends Controller
     public function sendMessage(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'senderId' => 'required|exists:users,id',
-            'receiverId' => 'required|exists:users,id',
+            'senderId' => 'required|exists:utilisateur,id',
+            'receiverId' => 'required|exists:utilisateur,id',
             'message' => 'required|string',
         ]);
 
@@ -35,8 +35,8 @@ class MessageController extends Controller
     public function getConversation(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'user1Id' => 'required|exists:users,id',
-            'user2Id' => 'required|exists:users,id',
+            'user1Id' => 'required|exists:utilisateur,id',
+            'user2Id' => 'required|exists:utilisateur,id',
         ]);
 
         if ($validator->fails()) {

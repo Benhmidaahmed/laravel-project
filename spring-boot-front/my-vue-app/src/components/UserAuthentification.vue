@@ -1,148 +1,142 @@
 <template>
   <div class="auth-wrapper">
     <div class="container" id="container">
-    <div class="form-container sign-up-container">
-      <form @submit.prevent="handleRegister">
-        
-        
-        <!-- Sélecteur de rôle -->
-        <div class="role-selector">
-          <button type="button" 
-                  :class="{ active: userType === 'student' }"
-                  @click="userType = 'student'">
-            STUDENT
+      <div class="form-container sign-up-container">
+        <form @submit.prevent="handleRegister">
+          <!-- Sélecteur de rôle -->
+          <div class="role-selector">
+            <button type="button" 
+                    :class="{ active: userType === 'student' }"
+                    @click="userType = 'student'">
+              STUDENT
+            </button>
+            <button type="button"
+                    :class="{ active: userType === 'psychologist' }"
+                    @click="userType = 'psychologist'">
+              PSYCHOLOGIST
+            </button>
+          </div>
+
+          <!-- Champs communs -->
+          <input v-model="registerData.first_name" type="text" placeholder="First name" required>
+          <input v-model="registerData.last_name" type="text" placeholder="Last name" required>
+          <input v-model="registerData.email" type="email" placeholder="Email" required>
+          <input v-model="registerData.password" type="password" placeholder="Password" required>
+          <input v-model="registerData.password_confirmation" type="password" placeholder="Confirm Password" required>
+          <input v-model="registerData.phone_number" type="tel" placeholder="Phone number" required>
+          <div class="form-group">
+            <input
+              type="file"
+              id="profileImage"
+              accept="image/*"
+              @change="onFileChange"
+            />
+          </div>
+
+          <!-- Champs spécifiques étudiants -->
+          <div v-if="userType === 'student'" class="specific-fields">
+            <input v-model="registerData.student_card_number" 
+                   type="text" 
+                   placeholder="student ID number (ex: AB123456)" 
+                   required>
+            <input v-model="registerData.university" type="text" placeholder="University" required>
+            <select v-model="registerData.study_level" required>
+              <option value="" disabled>Select your level</option>
+              <option value="L1">Licence 1</option>
+              <option value="L2">Licence 2</option>
+              <option value="L3">Licence 3</option>
+              <option value="M1">Master 1</option>
+              <option value="M2">Master 2</option>
+            </select>
+          </div>
+
+          <!-- Champs spécifiques psychologues -->
+          <div v-if="userType === 'psychologist'" class="specific-fields">
+            <input v-model="registerData.adeli_number" 
+                   type="text" 
+                   placeholder="ADELI number" 
+                   required>
+            <input v-model="registerData.specialization" 
+                   type="text" 
+                   placeholder="Specialization" 
+                   required>
+          </div>
+
+          <button type="submit" :disabled="isLoading">
+            {{ isLoading ? 'Signing up...' : 'Sign up' }}
           </button>
-          <button type="button"
-                  :class="{ active: userType === 'psychologist' }"
-                  @click="userType = 'psychologist'">
-            PSYCHOLOGIST
+
+          <p v-if="registerMessage" :class="messageClass" style="margin-bottom:10px">
+            {{ registerMessage }}
+          </p>
+        </form>
+      </div>
+
+      <div class="form-container sign-in-container">
+        <form @submit.prevent="handleLogin">
+          <h1>Login to your account</h1>
+          <input v-model="loginData.email" type="email" placeholder="Email" required>
+          <input v-model="loginData.password" type="password" placeholder="Password" required>
+          <a href="#">Forgot password?</a>
+          <button type="submit" :disabled="isLoading">
+            {{ isLoading ? 'Connexion...' : 'Log in' }}
           </button>
-        </div>
-
-        <!-- Champs communs -->
-        <input v-model="registerData.firstName" type="text" placeholder="First name" required>
-        <input v-model="registerData.lastName" type="text" placeholder="Last name" required>
-        <input v-model="registerData.email" type="email" placeholder="Email" required>
-        <input v-model="registerData.password" type="password" placeholder="Password" required>
-        <input v-model="registerData.phoneNumber" type="tel" placeholder="Phone number" required>
-        <div class="form-group">
-      <input
-        type="file"
-        id="profileImage"
-        accept="image/*"
-        @change="onFileChange"
-      />
-    </div>
-
-        <!-- Champs spécifiques étudiants -->
-        <div v-if="userType === 'student'" class="specific-fields">
-          <input v-model="registerData.studentCardNumber" 
-                 type="text" 
-                 placeholder="student ID number (ex: AB123456)" 
-                 required>
-          <input v-model="registerData.university" type="text" placeholder="University" required>
-          <select v-model="registerData.studyLevel" required>
-            <option value="" disabled>Select your level</option>
-            <option value="L1">Licence 1</option>
-            <option value="L2">Licence 2</option>
-            <option value="L3">Licence 3</option>
-            <option value="M1">Master 1</option>
-            <option value="M2">Master 2</option>
-          </select>
-        </div>
-
-        <!-- Champs spécifiques psychologues -->
-        <div v-if="userType === 'psychologist'" class="specific-fields">
-          <input v-model="registerData.adeliNumber" 
-                 type="text" 
-                 placeholder="ADELI number" 
-                 required>
-          <input v-model="registerData.specialization" 
-                 type="text" 
-                 placeholder="Specialization" 
-                 required>
-        </div>
-
-        <button type="submit" :disabled="isLoading">
-          {{ isLoading ? 'Signing up...' : 'Sign up' }}
-        </button>
-
-        <p v-if="registerMessage" :class="messageClass" style="margin-bottom:10px">
-          {{ registerMessage }}
-        </p>
-      </form>
-    </div>
-
-    <div class="form-container sign-in-container">
-      <form @submit.prevent="handleLogin">
-        <h1>Login to your account</h1>
-        <input v-model="loginData.email" type="email" placeholder="Email" required>
-        <input v-model="loginData.password" type="password" placeholder="Mot de passe" required>
-        <a href="#">Forgot password?</a>
-        <button type="submit" :disabled="isLoading">
-          {{ isLoading ? 'Connexion...' : 'Log in' }}
-        </button>
-        <p v-if="loginMessage" :class="loginMessageClass">
-          {{ loginMessage }}
-        </p>
-      </form>
-    </div>
-    
-
-    <div class="overlay-container">
-      <div class="overlay">
-        <div class="overlay-panel overlay-left">
-          <h1>Welcome back !</h1>
-          <p>Sign in to access your account</p>
-          <button class="ghost" id="signIn">Sign in</button>
-        </div>
-        <div class="overlay-panel overlay-right">
-          <h1>New here?</h1>
-          <p>Sign up and start your journey with us!</p>
-          <div class="signup-options">
-            <button class="ghost student" @click="selectUserType('student')">Student</button>
-            <button class="ghost psychologist" @click="selectUserType('psychologist')">Psychologist</button>
+          <p v-if="loginMessage" :class="loginMessageClass">
+            {{ loginMessage }}
+          </p>
+        </form>
+      </div>
+      
+      <div class="overlay-container">
+        <div class="overlay">
+          <div class="overlay-panel overlay-left">
+            <h1>Welcome back!</h1>
+            <p>Sign in to access your account</p>
+            <button class="ghost" id="signIn">Sign in</button>
+          </div>
+          <div class="overlay-panel overlay-right">
+            <h1>New here?</h1>
+            <p>Sign up and start your journey with us!</p>
+            <div class="signup-options">
+              <button class="ghost student" @click="selectUserType('student')">Student</button>
+              <button class="ghost psychologist" @click="selectUserType('psychologist')">Psychologist</button>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
-</div>
-  
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue';
 import axios from 'axios';
 import { useRouter } from 'vue-router';
-const profileImageFile = ref<File | null>(null);
-  function onFileChange(e: Event) {
-  const files = (e.target as HTMLInputElement).files;
-  if (files && files.length > 0) {
-    profileImageFile.value = files[0];
-  }
-}
+
 const router = useRouter();
+const profileImageFile = ref<File | null>(null);
 
 // État du formulaire
 const userType = ref<'student' | 'psychologist'>('student');
 const isLoading = ref(false);
 
-
 // Données de formulaire
 const registerData = reactive({
-  firstName: '',
-  lastName: '',
+  first_name: '',
+  last_name: '',
   email: '',
   password: '',
-  phoneNumber: '',
+  password_confirmation: '',
+    num_tel: '', // Changé de phone_number à num_tel
+  roles: 'STUDENT', // Changé de role à roles et en majuscules
   // Étudiant
-  studentCardNumber: '',
+  student_card_number: '',
   university: '',
-  studyLevel: '',
+  study_level: '',
   // Psychologue
-  adeliNumber: '',
-  specialization: ''
+  adeli_number: '',
+  specialization: '',
+   url_image: null // Changé de profile_image à url_image
 });
 
 const loginData = reactive({
@@ -167,156 +161,74 @@ const loginMessageClass = computed(() => ({
   'error': !loginSuccess.value
 }));
 
+function onFileChange(e: Event) {
+  const files = (e.target as HTMLInputElement).files;
+  if (files && files.length > 0) {
+    profileImageFile.value = files[0];
+     registerData.url_image = files[0];
+  }
+}
+
 // Sélection du type d'utilisateur depuis l'overlay
 const selectUserType = (type: 'student' | 'psychologist') => {
   userType.value = type;
+  registerData.roles = type === 'student' ? 'STUDENT' : 'PSYCHOLOGIST'; // Utiliser roles et majuscules
   const container = document.getElementById('container');
   container?.classList.add('right-panel-active');
 };
 
 // Inscription
-// const handleRegister = async () => {
-//   try {
-//     isLoading.value = true;
-//     registerMessage.value = '';
-
-//     // Préparation des données en fonction du type d'utilisateur
-//     let requestData;
-//     let endpoint;
-
-//     if (userType.value === 'student') {
-//       endpoint = 'http://localhost:8084/api/auth/student/register';
-//       requestData = {
-//         firstName: registerData.firstName,
-//         lastName: registerData.lastName,
-//         email: registerData.email,
-//         password: registerData.password,
-//         phoneNumber: registerData.phoneNumber,
-//         studentCardNumber: registerData.studentCardNumber,
-//         university: registerData.university,
-//         studyLevel: registerData.studyLevel
-//       };
-//     } else {
-//       endpoint = 'http://localhost:8084/api/auth/psychologist/register';
-//       requestData = {
-//         firstName: registerData.firstName,
-//         lastName: registerData.lastName,
-//         email: registerData.email,
-//         password: registerData.password,
-//         phoneNumber: registerData.phoneNumber,
-//         adeliNumber: registerData.adeliNumber,
-//         specialization: registerData.specialization
-//       };
-//     }
-
-//     // Envoi des données
-//     const response = await axios.post(endpoint, requestData);
-
-//     registerMessage.value = response.data || 'Inscription réussie ! Vérifiez votre email pour confirmer votre compte.';
-//     registerSuccess.value = true;
-
-//     // Réinitialisation après succès
-//     if (registerSuccess.value) {
-//   setTimeout(() => {
-//     (Object.keys(registerData) as Array<keyof typeof registerData>).forEach((key) => {
-//       registerData[key] = '';
-//     });
-//     registerMessage.value = '';
-//     const container = document.getElementById('container');
-//     container?.classList.remove('right-panel-active');
-//   }, 3000);
-// }
-
-//   } catch (error: any) {
-//     // Gestion améliorée des erreurs
-//     let errorMessage = "Erreur lors de l'inscription";
-    
-//     if (error.response) {
-//       if (typeof error.response.data === 'string') {
-//         errorMessage = error.response.data;
-//       } else if (error.response.data.message) {
-//         errorMessage = error.response.data.message;
-//       } else if (error.response.status === 409) {
-//         errorMessage = "Cet email est déjà utilisé";
-//       } else if (error.response.status === 400) {
-//         errorMessage = "Données invalides. Vérifiez les champs requis.";
-//       }
-//     } else if (error.request) {
-//       errorMessage = "Erreur de connexion au serveur";
-//     }
-
-//     registerMessage.value = errorMessage;
-//     registerSuccess.value = false;
-//   } finally {
-//     isLoading.value = false;
-//   }
-// };
 async function handleRegister() {
   try {
     isLoading.value = true;
     registerMessage.value = '';
 
-    // pick the right endpoint
-    const endpoint =
-      userType.value === 'student'
-        ? 'http://localhost:8084/api/auth/student/register'
-        : 'http://localhost:8084/api/auth/psychologist/register';
+    // Définir le rôle correctement en majuscules
+    registerData.roles = userType.value === 'student' ? 'STUDENT' : 'PSYCHOLOGIST';
 
-    // build multipart form data
     const formData = new FormData();
-    formData.append('firstName',   registerData.firstName);
-    formData.append('lastName',    registerData.lastName);
-    formData.append('email',       registerData.email);
-    formData.append('password',    registerData.password);
-    formData.append('phoneNumber', registerData.phoneNumber);
-
-    if (userType.value === 'student') {
-      formData.append('studentCardNumber', registerData.studentCardNumber);
-      formData.append('university',        registerData.university);
-      formData.append('studyLevel',        registerData.studyLevel);
-    } else {
-      formData.append('adeliNumber',    registerData.adeliNumber);
-      formData.append('specialization', registerData.specialization);
-    }
-
-    // attach image if provided
-    if (profileImageFile.value) {
-      formData.append('profileImage', profileImageFile.value);
-    }
-
-    // send as multipart/form-data
-    const response = await axios.post(endpoint, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
+    
+    // Ajouter les données au FormData avec les bons noms de champs
+    Object.entries(registerData).forEach(([key, value]) => {
+      if (value !== null && value !== undefined) {
+        if (key === 'url_image' && value instanceof File) {
+          formData.append('url_image', value);
+        } else {
+          formData.append(key, String(value));
+        }
+      }
     });
 
-    registerMessage.value = response.data || 'Inscription réussie !';
+    // Utiliser le bon endpoint API
+    const response = await axios.post('/api/register', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+        'Accept': 'application/json'
+      }
+    });
+
+    registerMessage.value = 'Inscription réussie ! Veuillez vous connecter.';
     registerSuccess.value = true;
 
-    // reset after success
+    // Réinitialisation du formulaire
     setTimeout(() => {
-      Object.keys(registerData).forEach((key) => {
-        // @ts-ignore
-        registerData[key] = '';
+      Object.keys(registerData).forEach(key => {
+        registerData[key] = key === 'roles' ? 'STUDENT' : ''; // Conserver le rôle par défaut
       });
       profileImageFile.value = null;
       registerMessage.value = '';
       document.getElementById('container')?.classList.remove('right-panel-active');
     }, 3000);
+
   } catch (error: any) {
-    // existing error handling...
-    let errorMessage = 'Erreur lors de l\'inscription';
+    let errorMessage = "Erreur lors de l'inscription";
+    
     if (error.response) {
-      if (typeof error.response.data === 'string') {
-        errorMessage = error.response.data;
+      if (error.response.data.errors) {
+        errorMessage = Object.values(error.response.data.errors).flat().join('\n');
       } else if (error.response.data.message) {
         errorMessage = error.response.data.message;
-      } else if (error.response.status === 409) {
-        errorMessage = 'Cet email est déjà utilisé';
-      } else if (error.response.status === 400) {
-        errorMessage = 'Données invalides. Vérifiez les champs requis.';
       }
-    } else if (error.request) {
-      errorMessage = 'Erreur de connexion au serveur';
     }
     registerMessage.value = errorMessage;
     registerSuccess.value = false;
@@ -331,37 +243,46 @@ const handleLogin = async () => {
     isLoading.value = true;
     loginMessage.value = '';
 
-    const response = await axios.post('http://localhost:8084/api/auth/login', {
+    const response = await axios.post('/api/login', {
       email: loginData.email,
       password: loginData.password
     });
 
-    // Stockage du token
+    // Store authentication data
     localStorage.setItem('token', response.data.token);
+    localStorage.setItem('userRole', response.data.role);
+    localStorage.setItem('userId', response.data.user_id);
     
-    // Stockage du rôle directement depuis la réponse
-    const userRole = response.data.role;
-    localStorage.setItem('userRole', userRole);
-    localStorage.setItem('userId', String(response.data.userId))
-    
-    loginMessage.value = response.data.message;
+    loginMessage.value = 'Login successful!';
     loginSuccess.value = true;
 
-    // Redirection basée sur le rôle
+    // Redirect based on role
     setTimeout(() => {
-      if (userRole === 'STUDENT') {
+      if (response.data.role === 'STUDENT') {
         router.push('/StudentPortal');
-      } else if (userRole === 'Psy') { // Assurez-vous que c'est bien 'PSY' et non 'Psy'
+      } else if (response.data.role === 'PSYCHOLOGIST') {
         router.push('/dashboard');
       } else {
-        router.push('/dashboard');
+        router.push('/');
       }
     }, 1000);
 
   } catch (error: any) {
-    loginMessage.value = error.response?.data?.message || 
-                       error.message || 
-                       'Email ou mot de passe incorrect';
+    let errorMessage = "Login error";
+    
+    if (error.response) {
+      if (error.response.data.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.response.status === 401) {
+        errorMessage = "Invalid credentials";
+      }
+    } else if (error.request) {
+      errorMessage = "Server connection error";
+    } else {
+      errorMessage = error.message;
+    }
+
+    loginMessage.value = errorMessage;
     loginSuccess.value = false;
   } finally {
     isLoading.value = false;

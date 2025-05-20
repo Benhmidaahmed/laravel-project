@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Utilisateur;
+use App\Models\utilisateur;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 
@@ -16,7 +16,7 @@ class PsychologistController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = Utilisateur::select([
+        $query = utilisateur::select([
                 'id',
                 'first_name',
                 'last_name',

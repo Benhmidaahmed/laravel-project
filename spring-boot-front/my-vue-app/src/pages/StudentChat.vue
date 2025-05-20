@@ -5,8 +5,8 @@
         <h5>Psychologist</h5>
         <ul>
           <li class="active">
-            <img :src="getImageUrl(psy.urlImage)" class="avatar" />
-            <span class="name">{{ psy.firstName }} {{ psy.lastName }}</span>
+            <img :src="getImageUrl(psy.url_Image)" class="avatar" />
+            <span class="name">{{ psy.first_Name }} {{ psy.las_tName }}</span>
           </li>
         </ul>
       </div>
@@ -14,8 +14,8 @@
       <!-- Chat panel -->
       <div class="chat-panel">
         <div class="chat-header">
-          <img :src="getImageUrl(psy.urlImage)" class="avatar" />
-          <h5>{{ psy.firstName }} {{ psy.lastName }}</h5>
+          <img :src="getImageUrl(psy.url_Image)" class="avatar" />
+          <h5>{{ psy.first_Name }} {{ psy.last_Name }}</h5>
         </div>
         <div ref="body" class="chat-body">
           <div

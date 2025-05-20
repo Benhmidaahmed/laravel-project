@@ -3,122 +3,76 @@
 namespace App\Http\Controllers;
 
 use App\Models\utilisateur;
-use App\Services\AuthService;
-use App\Services\FileStorageService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Validator;
-use Illuminate\Support\Facades\Response;
+use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 
 class AuthController extends Controller
 {
-    protected $authService;
-    protected $fileStorageService;
-
-    public function __construct(AuthService $authService, FileStorageService $fileStorageService)
+    public function register(Request $request)
     {
-        $this->authService = $authService;
-        $this->fileStorageService = $fileStorageService;
+     $validated = $request->validate([
+    'email' => 'required|email|unique:utilisateur',
+    'password' => 'required|min:6',
+    'first_name' => 'required',
+    'last_name' => 'required',
+    'roles' => 'required|in:STUDENT,PSYCHOLOGIST,ADMIN', // NOT an array
+]);
+
+
+      $user = utilisateur::create([
+    'email' => $validated['email'],
+    'password' => Hash::make($validated['password']),
+    'first_name' => $validated['first_name'],
+    'last_name' => $validated['last_name'],
+    'roles' => $validated['roles'], // This is now a string
+    'enabled' => true,
+]);
+
+
+        $token = JWTAuth::fromUser($user);
+
+        return response()->json([
+            'user' => $user,
+            'token' => $token,
+        ], 201);
     }
 
-    // Student Registration (with optional profile image)
-    public function registerStudent(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'firstName' => 'required|string',
-            'lastName' => 'required|string',
-            'email' => 'required|string|email|unique:users,email',
-            'password' => 'required|string|min:6',
-            'phoneNumber' => 'nullable|string',
-            'studentCardNumber' => 'required|string',
-            'university' => 'required|string',
-            'studyLevel' => 'required|string',
-            'profileImage' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-        ]);
-
-        if ($validator->fails()) {
-            return Response::json(['errors' => $validator->errors()], 422);
-        }
-
-        $user = new utilisateur();
-        $user->firstName = $request->firstName;
-        $user->lastName = $request->lastName;
-        $user->email = $request->email;
-        $user->password = Hash::make($request->password);
-        $user->numTel = $request->phoneNumber;
-        $user->studentCardNumber = $request->studentCardNumber;
-        $user->university = $request->university;
-        $user->studyLevel = $request->studyLevel;
-
-        // Handle profile image upload
-        if ($request->hasFile('profileImage')) {
-            $imagePath = $this->fileStorageService->storeFile($request->file('profileImage'));
-            $user->urlImage = $imagePath;
-        }
-
-        // Register the user with the 'STUDENT' role
-        $this->authService->register($user, 'STUDENT');
-
-        return response()->json(['message' => 'Student registration successful'], 200);
-    }
-
-    // Psychologist Registration (with optional profile image)
-    public function registerPsychologist(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'firstName' => 'required|string',
-            'lastName' => 'required|string',
-            'email' => 'required|string|email|unique:users,email',
-            'password' => 'required|string|min:6',
-            'phoneNumber' => 'nullable|string',
-            'adeliNumber' => 'required|string',
-            'specialization' => 'required|string',
-            'profileImage' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-        ]);
-
-        if ($validator->fails()) {
-            return Response::json(['errors' => $validator->errors()], 422);
-        }
-
-        $user = new utilisateur();
-        $user->firstName = $request->firstName;
-        $user->lastName = $request->lastName;
-        $user->email = $request->email;
-        $user->password = Hash::make($request->password);
-        $user->numTel = $request->phoneNumber;
-        $user->adeliNumber = $request->adeliNumber;
-        $user->specialization = $request->specialization;
-
-        // Handle profile image upload
-        if ($request->hasFile('profileImage')) {
-            $imagePath = $this->fileStorageService->storeFile($request->file('profileImage'));
-            $user->urlImage = $imagePath;
-        }
-
-        // Register the user with the 'Psy' role
-        $this->authService->register($user, 'Psy');
-
-        return response()->json(['message' => 'Psychologist registration successful'], 200);
-    }
-
-    // Login
     public function login(Request $request)
     {
         $credentials = $request->only('email', 'password');
 
-        if ($this->authService->login($credentials)) {
-            return response()->json(['message' => 'Login successful']);
-        } else {
-            return response()->json(['message' => 'Invalid credentials'], 401);
+        if (!$token = JWTAuth::attempt($credentials)) {
+            return response()->json(['error' => 'Unauthorized'], 401);
         }
+
+        return $this->respondWithToken($token);
     }
 
-    // Confirm Account via Token
-    public function confirmAccount(Request $request)
+    public function me()
     {
-        $token = $request->query('token');
-        $confirmationMessage = $this->authService->confirmToken($token);
+        return response()->json(JWTAuth::user());
+    }
 
-        return response()->json(['message' => $confirmationMessage]);
+    public function logout()
+    {
+        JWTAuth::invalidate(JWTAuth::getToken());
+        return response()->json(['message' => 'Successfully logged out']);
+    }
+
+    public function refresh()
+    {
+        return $this->respondWithToken(JWTAuth::refresh());
+    }
+
+    protected function respondWithToken($token)
+    {
+        return response()->json([
+            'access_token' => $token,
+            'token_type' => 'bearer',
+            'expires_in' => JWTAuth::factory()->getTTL() * 60,
+            'user' => JWTAuth::user(),
+        ]);
     }
 }

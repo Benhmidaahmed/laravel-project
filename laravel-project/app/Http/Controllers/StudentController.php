@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Utilisateur;
+use App\Models\utilisateur;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Schema;
 
@@ -17,7 +17,7 @@ class StudentController extends Controller
     {
         try {
             // Select only necessary columns
-            $students = Utilisateur::where('roles', 'STUDENT')
+            $students = utilisateur::where('roles', 'STUDENT')
                 ->select(['id', 'email', 'first_name', 'last_name', 'roles']) // Add more if needed
                 ->get()
                 ->toArray();
@@ -27,7 +27,7 @@ class StudentController extends Controller
                     'message' => 'Aucun étudiant trouvé',
                     'debug' => [
                         'table_exists' => Schema::hasTable('utilisateur'),
-                        'student_count' => Utilisateur::where('roles', 'STUDENT')->count(),
+                        'student_count' => utilisateur::where('roles', 'STUDENT')->count(),
                     ]
                 ], 200);
             }

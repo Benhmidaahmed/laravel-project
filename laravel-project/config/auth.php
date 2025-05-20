@@ -14,10 +14,9 @@ return [
         ],
 
         'api' => [
-            'driver' => 'sanctum',
-            'provider' => 'utilisateurs', // ✅ Also here
-            'hash' => false,
-        ],
+        'driver' => 'jwt', // Change from 'token' to 'jwt'
+        'provider' => 'users',
+    ],
     ],
 
     'providers' => [
@@ -26,11 +25,7 @@ return [
             'model' => \App\Models\utilisateur::class, // ✅ Your actual model
         ],
 
-        // Optional: Only keep if used
-        'custom_users' => [
-            'driver' => 'custom',
-            'via' => \App\Services\CustomUserDetailsService::class,
-        ],
+        
     ],
 
     'passwords' => [
