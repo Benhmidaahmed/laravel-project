@@ -6,28 +6,21 @@ import StudentPortal from "@/pages/StudentPortal.vue";
 import Forum from "@/pages/Forum.vue";
 import form from "@/pages/form.vue";
 import StudentChat from "@/pages/StudentChat.vue";
+
 const routes: Array<RouteRecordRaw> = [
   {
     path: "/dashboard",
     name: "UserForm",
     component: UserForm,
-    meta: { requiresAuth: true }
-    
+    meta: { requiresAuth: true, roles: ["ADMIN","PSYCHOLOGIST"] },
   },
   {
     path: "/Forum",
     name: "Forum",
     component: Forum,
-    
-    
+    meta: { requiresAuth: true, roles: ["STUDENT", "PSYCHOLOGIST", "ADMIN"] },
   },
-  // {
-  //   path: '/booking/:psyId',
-  //   name: 'Booking',
-  //   component: Booking,
-    
-  // },
-{
+  {
     path: "/",
     name: "UserAuthentification",
     component: UserAuthentification,
@@ -36,31 +29,35 @@ const routes: Array<RouteRecordRaw> = [
     path: "/form/:psyId",
     name: "form",
     component: form,
+    meta: { requiresAuth: true, roles: ["STUDENT", "ADMIN"] },
   },
   {
-    path:"/StudentPortal",
-    name:"StudentPortal",
-    component:StudentPortal,
+    path: "/StudentPortal",
+    name: "StudentPortal",
+    component: StudentPortal,
+    meta: { requiresAuth: true, roles: ["STUDENT", "ADMIN"] },
   },
   {
-    path:"/AIAssistant",
-    name:"AIAssistant",
-    component:AIAssistant,
+    path: "/AIAssistant",
+    name: "AIAssistant",
+    component: AIAssistant,
+    meta: { requiresAuth: true, roles: ["STUDENT", "PSYCHOLOGIST", "ADMIN"] },
   },
   {
-    path: '/chat/:psyId',
-    name: 'StudentChat',
+    path: "/chat/:psyId",
+    name: "StudentChat",
     component: StudentChat,
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true, roles: ["STUDENT", "ADMIN"] },
   },
   {
     path: "/about",
     name: "about",
-    // route level code-splitting
-    // this generates a separate chunk (about.[hash].js) for this route
-    // which is lazy-loaded when the route is visited.
-    component: () =>
-      import(/* webpackChunkName: "about" */ "../views/AboutView.vue"),
+    component: () => import("../views/AboutView.vue"),
+  },
+  {
+    path: "/forbidden",
+    name: "Forbidden",
+    component: () => import("../views/Forbidden.vue"),
   },
 ];
 
@@ -68,29 +65,37 @@ const router = createRouter({
   history: createWebHashHistory(),
   routes,
   scrollBehavior(to, from, savedPosition) {
-    // if navigating to a hash, scroll to that element smoothly
     if (to.hash) {
       return {
         el: to.hash,
-        behavior: 'smooth'
+        behavior: "smooth",
       };
     }
-    // fallback to top
     return { top: 0 };
   },
 });
 
 router.beforeEach((to, from, next) => {
-  console.log(`Navigation de ${from.path} vers ${to.path}`); // [!code ++]
-  const token = localStorage.getItem('token');
-  console.log("Token trouvé:", token ? "Oui" : "Non"); // [!code ++]
+  const token = localStorage.getItem("token");
+  const userRole = localStorage.getItem("userRole"); // e.g., STUDENT, PSYCHOLOGIST, ADMIN
 
+  // Redirect unauthenticated users
   if (to.meta.requiresAuth && !token) {
-    console.log("Accès refusé - Redirection vers /"); // [!code ++]
-    next('/');
-  } else {
-    console.log("Accès autorisé"); // [!code ++]
-    next();
+    console.log("Access denied: not authenticated");
+    return next("/");
   }
+
+  // Restrict based on role if defined
+  if (
+    Array.isArray((to.meta as any).roles) &&
+    userRole &&
+    !(to.meta as any).roles.includes(userRole)
+  ) {
+    console.log(`Access denied: role "${userRole}" cannot access ${to.path}`);
+    return next("/forbidden"); // or use "/" if you don't want to create a Forbidden.vue
+  }
+
+  next();
 });
+
 export default router;

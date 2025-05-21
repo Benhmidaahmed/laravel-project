@@ -26,22 +26,29 @@
             </a> -->
             <!-- ***** Logo End ***** -->
             <!-- ***** Menu Start ***** -->
-            <ul class="nav">
-<li class="scroll-to-section">
-  <a href="#top" @click.prevent="scrollTo('top')">Home</a>
-</li>
-<li class="scroll-to-section">
-  <a href="#services" @click.prevent="scrollTo('services')">Services</a>
-</li>
-<li class="scroll-to-section">
-  <a href="#about" @click.prevent="scrollTo('about')">About</a>
-</li>
-<li class="scroll-to-section">
-  <a href="#pricing" @click.prevent="scrollTo('pricing')">Psychologists</a>
-</li>
-<li class="scroll-to-section">
-  <a href="#newsletter" @click.prevent="scrollTo('newsletter')">Newsletter</a>
-</li>
+            
+<ul class="nav">
+   <li class="scroll-to-section">
+    <a href="#top" @click.prevent="scrollToSection('#top')">Home</a>
+  </li>
+
+  <li class="scroll-to-section">
+    <a href="#services" @click.prevent="scrollToSection('#services')">Services</a>
+  </li>
+
+  <li class="scroll-to-section">
+    <a href="#about" @click.prevent="scrollToSection('#about')">About</a>
+  </li>
+
+  <li class="scroll-to-section">
+    <a href="#pricing" @click.prevent="scrollToSection('#pricing')">Psychologists</a>
+  </li>
+
+  <li class="scroll-to-section">
+    <a href="#newsletter" @click.prevent="scrollToSection('#newsletter')">Newsletter</a>
+  </li>
+
+
 
 
               <li><div class="gradient-button"><a id="modal_trigger"  @click.prevent="handleLogout"><i class="fa fa-sign-in-alt"></i> Sign out </a></div></li> 
@@ -552,8 +559,12 @@ UniWell is a dedicated platform designed to support students' mental well-being.
 </template>
 
 <script>
+import StudentPortal from './StudentPortal.vue';
 import axios from 'axios';
 export default {
+  components: {
+    StudentPortal
+  },
   name: "StudentPortal",
   data(){
     return{
@@ -713,19 +724,22 @@ export default {
     localStorage.clear();
     window.location.href = '/';
   }
-}
+},
+ scrollToSection(sectionId) {
+      const section = document.querySelector(sectionId);
+      if (section) {
+        window.scrollTo({
+          top: section.offsetTop,
+          behavior: 'smooth',
+        });
+      }
+    }
     
   }
-  ,scrollTo(sectionId) {
-    // Solution simple avec scroll natif
-    const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({ 
-        behavior: 'smooth',
-        block: 'start' 
-      });
-    }
-  },
+  
+  
+  
+  
 };
 </script>
 <style  >
