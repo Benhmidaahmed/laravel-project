@@ -21,7 +21,7 @@
             @click="selectThread(thread)"
           >
             <span class="thread-title">{{ thread.title }}</span>
-            <span class="thread-author">{{ thread.author.username || thread.author.email }}</span>
+            <span class="thread-author">{{ thread.author_id.username || thread.author_id.email }}</span>
           </li>
         </ul>
       </div>
@@ -37,7 +37,7 @@
         <!-- If a post is selected, show only that post and its comments -->
         <div v-if="selectedPost">
           <div class="selected-post-bubble">
-            <span class="author">{{ selectedPost.author.username || selectedPost.author.email }}</span>
+            <span class="author">{{ selectedPost.author_id.username || selectedPost.author_id.email }}</span>
             <div class="bubble-message">{{ selectedPost.content }}</div>
             <button class="back-btn" @click="selectedPost = null">← Back to posts</button>
           </div>
@@ -48,7 +48,7 @@
               :key="comment.id"
               class="comment-bubble"
             >
-              <span class="author">{{ comment.author.username || comment.author.email }}</span>
+              <span class="author">{{ comment.author_id.username || comment.author_id.email }}</span>
               <div class="bubble-message">{{ comment.text }}</div>
             </div>
           </div>
@@ -71,7 +71,7 @@
               @click="selectPost(post)"
             >
               <div class="bubble-content">
-                <span class="author">{{ post.author.username || post.author.email }}</span>
+                <span class="author">{{ post.author_id.username || post.author_id.email }}</span>
                 <div class="bubble-message">{{ post.content }}</div>
               </div>
             </div>
@@ -102,19 +102,19 @@ interface User {
 interface ForumThread {
   id: number
   title: string
-  author: User
+  author_id: User
 }
 
 interface Post {
   id: number
   content: string
-  author: User
+  author_id: User
 }
 
 interface Comment {
   id: number
   text: string
-  author: User
+  author_id: User
 }
 
 const threads = ref<ForumThread[]>([])
