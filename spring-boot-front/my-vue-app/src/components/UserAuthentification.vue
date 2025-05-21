@@ -23,7 +23,7 @@
           <input v-model="registerData.email" type="email" placeholder="Email" required>
           <input v-model="registerData.password" type="password" placeholder="Password" required>
           <input v-model="registerData.password_confirmation" type="password" placeholder="Confirm Password" required>
-          <input v-model="registerData.phone_number" type="tel" placeholder="Phone number" required>
+          <input v-model="registerData.num_tel" type="tel" placeholder="Phone number" required>
           <div class="form-group">
             <input
               type="file"
@@ -121,13 +121,27 @@ const userType = ref<'student' | 'psychologist'>('student');
 const isLoading = ref(false);
 
 // Données de formulaire
-const registerData = reactive({
+const registerData = reactive<{
+  first_name: string;
+  last_name: string;
+  email: string;
+  password: string;
+  password_confirmation: string;
+  num_tel: string;
+  roles: string;
+  student_card_number: string;
+  university: string;
+  study_level: string;
+  adeli_number: string;
+  specialization: string;
+  url_image: string;
+}>({
   first_name: '',
   last_name: '',
   email: '',
   password: '',
   password_confirmation: '',
-    num_tel: '', // Changé de phone_number à num_tel
+  num_tel: '', // Changé de phone_number à num_tel
   roles: 'STUDENT', // Changé de role à roles et en majuscules
   // Étudiant
   student_card_number: '',
@@ -136,7 +150,7 @@ const registerData = reactive({
   // Psychologue
   adeli_number: '',
   specialization: '',
-   url_image: null // Changé de profile_image à url_image
+  url_image:'' // Changé de profile_image à url_image
 });
 
 const loginData = reactive({
@@ -165,7 +179,7 @@ function onFileChange(e: Event) {
   const files = (e.target as HTMLInputElement).files;
   if (files && files.length > 0) {
     profileImageFile.value = files[0];
-     registerData.url_image = files[0];
+    // Do not assign File to url_image, keep it for FormData only
   }
 }
 
@@ -190,12 +204,13 @@ async function handleRegister() {
     
     // Ajouter les données au FormData avec les bons noms de champs
     Object.entries(registerData).forEach(([key, value]) => {
-      if (value !== null && value !== undefined) {
-        if (key === 'url_image' && value instanceof File) {
-          formData.append('url_image', value);
-        } else {
-          formData.append(key, String(value));
+      if (key === 'url_image') {
+        // Append the file if selected
+        if (profileImageFile.value) {
+          formData.append('url_image', profileImageFile.value);
         }
+      } else if (value !== null && value !== undefined) {
+        formData.append(key, String(value));
       }
     });
 
@@ -213,7 +228,7 @@ async function handleRegister() {
     // Réinitialisation du formulaire
     setTimeout(() => {
       Object.keys(registerData).forEach(key => {
-        registerData[key] = key === 'roles' ? 'STUDENT' : ''; // Conserver le rôle par défaut
+        registerData[key as keyof typeof registerData] = key === 'roles' ? 'STUDENT' : '' as any; // Conserver le rôle par défaut
       });
       profileImageFile.value = null;
       registerMessage.value = '';

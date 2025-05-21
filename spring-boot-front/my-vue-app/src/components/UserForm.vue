@@ -149,7 +149,7 @@
               >
                 <td width="60px">
                   <div class="imgBx">
-                    <img :src="getImageUrl(student.avatar)" :alt="student.name" class="student-avatar" />
+                   <img :src="getImageUrl(student.url_image)" :alt="`${student.first_name} ${student.last_name}`">
                   </div>
                 </td>
                 <td>
@@ -165,80 +165,79 @@
       </div>
 
       <!-- Student Detail View -->
-      <div v-if="currentView === 'student-detail' && selectedStudent" class="student-detail-view">
-        <div class="cardHeader">
-          <h2>Student Details</h2>
-          <button @click="currentView = 'students'" class="back-btn">Back to Students</button>
+     <div v-if="currentView === 'student-detail' && selectedStudent" class="student-detail-view">
+    <div class="cardHeader">
+      <h2>Student Details</h2>
+      <button @click="currentView = 'students'" class="back-btn">Back to Students</button>
+    </div>
+    <div class="student-profile">
+      <div class="profile-header">
+        <div class="avatar">
+          <img
+            :src="getImageUrl(selectedStudent.url_image)"
+            :alt="`${selectedStudent.first_name} ${selectedStudent.last_name}`"
+            class="detail-avatar"
+          />
         </div>
-        <div class="student-profile">
-          <div class="profile-header">
-            <div class="avatar">
-                          <img
-              :src="getImageUrl(selectedStudent.urlImage)"
-              :alt="`${selectedStudent.firstName} ${selectedStudent.lastName}`"
-              class="detail-avatar"
-            />
-            </div>
-            <div class="profile-info">
-              <h1>{{ selectedStudent.firstName }} {{ selectedStudent.lastName }}</h1>
-              <p class="email">{{ selectedStudent.email }}</p>
-            </div>
+        <div class="profile-info">
+          <h1>{{ selectedStudent.first_name }} {{ selectedStudent.last_name }}</h1>
+          <p class="email">{{ selectedStudent.email }}</p>
+        </div>
+      </div>
+      <div class="profile-details">
+        <div class="detail-card">
+          <h3>Personal Information</h3>
+          <div class="detail-row">
+            <span class="detail-label">First Name:</span>
+            <span class="detail-value">{{ selectedStudent.first_name }}</span>
           </div>
-          <div class="profile-details">
-            <div class="detail-card">
-              <h3>Personal Information</h3>
-              <div class="detail-row">
-                <span class="detail-label">First Name:</span>
-                <span class="detail-value">{{ selectedStudent.firstName }}</span>
-              </div>
-              <div class="detail-row">
-                <span class="detail-label">Last Name:</span>
-                <span class="detail-value">{{ selectedStudent.lastName }}</span>
-              </div>
-              <div class="detail-row">
-                <span class="detail-label">Email:</span>
-                <span class="detail-value">{{ selectedStudent.email }}</span>
-              </div>
-            </div>
+          <div class="detail-row">
+            <span class="detail-label">Last Name:</span>
+            <span class="detail-value">{{ selectedStudent.last_name }}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">Email:</span>
+            <span class="detail-value">{{ selectedStudent.email }}</span>
           </div>
         </div>
       </div>
-
+    </div>
+  </div>
       <!-- All Students View -->
-      <div v-if="currentView === 'students'" class="students-view">
-        <div class="cardHeader">
-          <h2>All Students</h2>
-          <button @click="currentView = 'dashboard'" class="back-btn">Back to Dashboard</button>
-        </div>
-        <table class="students-table">
-          <thead>
-            <tr>
-              <th>Photo</th>
-              <th>Name</th>
-              <th>Email</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="student in allStudents" :key="student.id">
-              <td>
-                <div class="imgBx">
-                                  <img
-                  :src="getImageUrl(student.urlImage)"
-                  :alt="student.firstName"
-                  class="student-avatar"
-                />
-                </div>
-              </td>
-              <td>{{ student.firstName }} {{ student.lastName }}</td>
-              <td>{{ student.email }}</td>
-              <td>
-                <button @click="viewStudent(student.id)" class="view-btn">View</button>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+<div v-if="currentView === 'students'" class="students-view">
+    <div class="cardHeader">
+      <h2>All Students</h2>
+      <button @click="currentView = 'dashboard'" class="back-btn">Back to Dashboard</button>
+    </div>
+    <table class="students-table">
+      <thead>
+        <tr>
+          <th>Photo</th>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="student in allStudents" :key="student.id">
+          <td>
+            <div class="imgBx">
+              <img
+                :src="getImageUrl(student.url_image)"
+                :alt="`${student.first_name} ${student.last_name}`"
+                class="student-avatar"
+              />
+            </div>
+          </td>
+          <td>{{ student.first_name }} {{ student.last_name }}</td>
+          <td>{{ student.email }}</td>
+          <td>
+            <button @click="viewStudent(student.id)" class="view-btn">View</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
       <!-- All Appointments View -->
       <div v-if="currentView === 'allAppointments'" class="all-appointments-view">
         <div class="cardHeader">
@@ -282,8 +281,9 @@
           :class="{ active: selectedContact?.id === stu.id }"
           @click="loadConversation(stu)"
         >
-          <img :src="getImageUrl(stu.urlImage)" alt="" class="avatar" />
-          <span class="name">{{ stu.firstName }} {{ stu.lastName }}</span>
+        <img :src="getImageUrl(stu.url_image)" alt="" class="avatar" />
+
+          <span class="name">{{ stu.first_name }} {{ stu.last_name }}</span>
         </li>
       </ul>
     </aside>
@@ -296,8 +296,8 @@
       <div v-else class="chat-inner">
         <!-- Header -->
         <header class="chat-header">
-          <img :src="getImageUrl(selectedContact.urlImage)" alt="" class="avatar" />
-          <h5>{{ selectedContact.firstName }} {{ selectedContact.lastName }}</h5>
+          <img :src="getImageUrl(selectedContact.url_image)" alt="" class="avatar" />
+          <h5>{{ selectedContact.first_name }} {{ selectedContact.last_name }}</h5>
         </header>
         <!-- Message history -->
         <div class="chat-body">
@@ -414,15 +414,10 @@ export default {
       }
     },
     getImageUrl(path) {
-    if (!path) {
-      return 'https://via.placeholder.com/40';
-    }
-    // already absolute?
-    if (path.startsWith('http')) {
-      return path;
-    }
-    return `http://localhost:8084${path}`;
-  },
+  if (!path) return 'https://via.placeholder.com/150';
+  if (path.startsWith('http')) return path;
+  return `${axios.defaults.baseURL}/storage/${path}`;
+},
     async fetchAllStudents() {
       try {
         const response = await fetch("http://localhost:8084/api/users/students");
@@ -437,9 +432,9 @@ export default {
     prepareRecentStudents() {
       this.recentStudents = this.allStudents.slice(0, 5).map(student => ({
         id: student.id,
-        name: `${student.firstName} ${student.lastName}`,
+        name: `${student.first_name} ${student.last_name}`,
         email: student.email,
-        avatar: this.getImageUrl(student.urlImage)
+        url_image: student.url_image
       }));
     },
     async fetchAppointments() {

@@ -13,33 +13,30 @@ class StudentController extends Controller
      *
      * @return JsonResponse
      */
-    public function getStudents(): JsonResponse
-    {
-        try {
-            // Select only necessary columns
-            $students = utilisateur::where('roles', 'STUDENT')
-                ->select(['id', 'email', 'first_name', 'last_name', 'roles']) // Add more if needed
-                ->get()
-                ->toArray();
+  public function getStudents(): JsonResponse
+{
+    try {
+        $students = utilisateur::where('roles', 'STUDENT')
+            ->select(['id', 'email', 'first_name', 'last_name', 'url_image', 'roles'])
+            ->get()
+            ->map(function ($student) {
+                return [
+                    'id' => $student->id,
+                    'email' => $student->email,
+                    'first_name' => $student->first_name,
+                    'last_name' => $student->last_name,
+                    'url_image' => $student->url_image,
+                    'roles' => $student->roles
+                ];
+            });
 
-            if (empty($students)) {
-                return response()->json([
-                    'message' => 'Aucun étudiant trouvé',
-                    'debug' => [
-                        'table_exists' => Schema::hasTable('utilisateur'),
-                        'student_count' => utilisateur::where('roles', 'STUDENT')->count(),
-                    ]
-                ], 200);
-            }
+        return response()->json($students);
 
-            return response()->json($students);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'error' => 'Erreur serveur',
-                'details' => config('app.debug') ? $e->getMessage() : 'Voir les logs',
-                'trace' => config('app.debug') ? $e->getTrace() : null,
-            ], 500);
-        }
+    } catch (\Exception $e) {
+        return response()->json([
+            'error' => 'Server error',
+            'message' => $e->getMessage()
+        ], 500);
     }
+}
 }

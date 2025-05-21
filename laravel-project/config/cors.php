@@ -3,5 +3,6 @@
 return [
 	'paths' => ['api/*'],
 	'allowed_origins' => ['*'],
+    'storage/*'
 ];
 ?>

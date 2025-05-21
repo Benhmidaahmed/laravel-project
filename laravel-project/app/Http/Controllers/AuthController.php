@@ -11,33 +11,58 @@ use PHPOpenSourceSaver\JWTAuth\Facades\JWTAuth;
 class AuthController extends Controller
 {
     public function register(Request $request)
-    {
-     $validated = $request->validate([
-    'email' => 'required|email|unique:utilisateur',
-    'password' => 'required|min:6',
-    'first_name' => 'required',
-    'last_name' => 'required',
-    'roles' => 'required|in:STUDENT,PSYCHOLOGIST,ADMIN', // NOT an array
-]);
+{
+    $validated = $request->validate([
+        'email' => 'required|email|unique:utilisateur',
+        'password' => 'required|min:6|confirmed',
+        'first_name' => 'required',
+        'last_name' => 'required',
+        'num_tel' => 'required',
+        'roles' => 'required|in:STUDENT,PSYCHOLOGIST,ADMIN', // Correction de STUDENT
+        // Champs étudiants
+        'student_card_number' => 'required_if:roles,STUDENT',
+        'university' => 'required_if:roles,STUDENT',
+        'study_level' => 'required_if:roles,STUDENT',
+        // Champs psychologues
+        'adeli_number' => 'required_if:roles,PSYCHOLOGIST',
+        'specialization' => 'required_if:roles,PSYCHOLOGIST',
+    ]);
 
+    $userData = [
+        'email' => $validated['email'],
+        'password' => Hash::make($validated['password']),
+        'first_name' => $validated['first_name'],
+        'last_name' => $validated['last_name'],
+        'num_tel' => $validated['num_tel'],
+        'roles' => $validated['roles'],
+        'enabled' => true,
+    ];
 
-      $user = utilisateur::create([
-    'email' => $validated['email'],
-    'password' => Hash::make($validated['password']),
-    'first_name' => $validated['first_name'],
-    'last_name' => $validated['last_name'],
-    'roles' => $validated['roles'], // This is now a string
-    'enabled' => true,
-]);
-
-
-        $token = JWTAuth::fromUser($user);
-
-        return response()->json([
-            'user' => $user,
-            'token' => $token,
-        ], 201);
+    // Gestion des champs spécifiques
+    if ($validated['roles'] === 'STUDENT') {
+        $userData['student_card_number'] = $validated['student_card_number'];
+        $userData['university'] = $validated['university'];
+        $userData['study_level'] = $validated['study_level'];
+    } else if ($validated['roles'] === 'PSYCHOLOGIST') {
+        $userData['adeli_number'] = $validated['adeli_number'];
+        $userData['specialization'] = $validated['specialization'];
     }
+
+    // Gestion de l'image
+    if ($request->hasFile('url_image')) {
+        $path = $request->file('url_image')->store('profile_images', 'public');
+        $userData['url_image'] = $path;
+    }
+
+    $user = utilisateur::create($userData);
+
+    $token = JWTAuth::fromUser($user);
+
+    return response()->json([
+        'user' => $user,
+        'token' => $token,
+    ], 201);
+}
 
     public function login(Request $request)
     {

@@ -597,13 +597,21 @@ export default {
       }
       return a;
     },
-    getImageUrl(path) {
-      if (!path) return '/default-avatar.png';
-      // If it's already an absolute URL, just use it:
-      if (path.startsWith('http')) return path;
-      // Otherwise, prefix your backend origin:
-      return `http://localhost:8084${path}`;
-    },
+  getImageUrl(path) {
+    // 1. Si pas de chemin, retourne une image par défaut
+    if (!path) return '/default-avatar.png';
+    
+    // 2. Si c'est déjà une URL complète (ex: stockée depuis un service externe)
+    if (path.startsWith('http')) return path;
+    
+    // 3. Si le chemin contient déjà /storage/, ne pas le dupliquer
+    if (path.includes('/storage/')) {
+        return `http://localhost:8084${path}`;
+    }
+    
+    // 4. Cas standard pour les images uploadées via Laravel
+    return `http://localhost:8084/storage/${path}`;
+},
 
     bookSession(psyId) {
     // redirect to booking form for the selected psychologist

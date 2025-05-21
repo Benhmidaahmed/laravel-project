@@ -1,110 +1,179 @@
 <template>
-    <div v-if="psy" class="messages-container">
-      <!-- Contacts sidebar: here just the one psych -->
-      <div class="contacts-list">
-        <h5>Psychologist</h5>
-        <ul>
-          <li class="active">
-            <img :src="getImageUrl(psy.url_Image)" class="avatar" />
-            <span class="name">{{ psy.first_Name }} {{ psy.las_tName }}</span>
-          </li>
-        </ul>
+  <div v-if="psy" class="messages-container">
+    <!-- Contacts sidebar -->
+    <div class="contacts-list">
+      <h5>Psychologist</h5>
+      <ul>
+        <li class="active">
+          <img :src="getImageUrl(psy.url_image)" :alt="psy.first_name" class="avatar" />
+          <span class="name">{{ psy.first_name }} {{ psy.last_name }}</span>
+        </li>
+      </ul>
+    </div>
+
+    <!-- Chat panel -->
+    <div class="chat-panel">
+      <div class="chat-header">
+        <img :src="getImageUrl(psy.url_image)" :alt="psy.first_name" class="avatar" />
+        <h5>{{ psy.first_name }} {{ psy.last_name }}</h5>
       </div>
-  
-      <!-- Chat panel -->
-      <div class="chat-panel">
-        <div class="chat-header">
-          <img :src="getImageUrl(psy.url_Image)" class="avatar" />
-          <h5>{{ psy.first_Name }} {{ psy.last_Name }}</h5>
-        </div>
-        <div ref="body" class="chat-body">
-          <div
-            v-for="msg in conversation"
-            :key="msg.id"
-            :class="['message', msg.sender.id === currentUserId ? 'sent' : 'received']"
-          >
-            {{ msg.content }}
-            <span class="ts">{{ formatTime(msg.timestamp) }}</span>
-          </div>
-        </div>
-        <div class="chat-input">
-          <input
-            v-model="newMessageText"
-            placeholder="Type a message…"
-            @keyup.enter="sendMessage"
-          />
-          <button @click="sendMessage">Send</button>
+      <div ref="chatBody" class="chat-body">
+        <div
+          v-for="msg in conversation"
+          :key="msg.id"
+          :class="['message', msg.sender.id === currentUserId ? 'sent' : 'received']"
+        >
+          <p>{{ msg.content }}</p>
+          <span class="ts">{{ formatTime(msg.timestamp) }}</span>
         </div>
       </div>
+      <div class="chat-input">
+        <input
+          v-model="newMessageText"
+          placeholder="Type a message..."
+          @keyup.enter="sendMessage"
+          :disabled="isSending"
+        />
+        <button @click="sendMessage" :disabled="!newMessageText.trim() || isSending">
+          {{ isSending ? 'Sending...' : 'Send' }}
+        </button>
+      </div>
     </div>
-    <div v-else class="empty-state">
-      Loading chat…
-    </div>
-  </template>
+  </div>
   
-  <script>
-  import axios from 'axios';
-  export default {
-    name: 'StudentChat',
-    data() {
-      return {
-        currentUserId: Number(localStorage.getItem('userId')),
-        psy: null,
-        conversation: [],
-        newMessageText: '',
-      };
-    },
-    async mounted() {
-     
-      // load the psychologist
-      const psyId = Number(this.$route.params.psyId);
-      const { data: allPsys } = await axios.get('/api/psychologists');
-      this.psy = allPsys.find(p => p.id === psyId);
-  
-      // load and scroll
-      await this.loadConversation();
-      this.scrollToBottom();
-    },
-    methods: {
-        getImageUrl(path) {
-    if (!path) {
-      return 'https://via.placeholder.com/40';
-    }
-    // already absolute?
-    if (path.startsWith('http')) {
-      return path;
-    }
-    return `http://localhost:8084${path}`;
+  <div v-else class="loading-state">
+    <p v-if="!error">Loading chat session...</p>
+    <p v-else class="error-message">{{ error }}</p>
+  </div>
+</template>
+
+<script>
+import axios from 'axios';
+
+export default {
+  name: 'StudentChat',
+  data() {
+    return {
+      currentUserId: null,
+      psy: null,
+      conversation: [],
+      newMessageText: '',
+      isSending: false,
+      error: null,
+      isLoading: true
+    };
   },
-      async loadConversation() {
-        const payload = {
+  async created() {
+    try {
+      this.currentUserId = parseInt(localStorage.getItem('userId'));
+      if (!this.currentUserId) {
+        throw new Error('User ID not found');
+      }
+
+      await this.initializeChat();
+    } catch (err) {
+      this.error = err.message || 'Failed to initialize chat';
+      console.error('Initialization error:', err);
+    } finally {
+      this.isLoading = false;
+    }
+  },
+  methods: {
+    getImageUrl(path) {
+      if (!path) return '/default-avatar.png';
+      if (path.startsWith('http')) return path;
+      return `${process.env.VUE_APP_API_URL || 'http://localhost:8084'}/storage/${path}`;
+    },
+
+    async initializeChat() {
+      try {
+        const psyId = parseInt(this.$route.params.psyId);
+        if (!psyId) throw new Error('Invalid psychologist ID');
+
+        const response = await axios.get('/api/psychologists', {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+        
+        this.psy = response.data.find(p => p.id === psyId);
+        if (!this.psy) throw new Error('Psychologist not found');
+
+        await this.loadConversation();
+        this.scrollToBottom();
+      } catch (err) {
+        this.error = err.response?.data?.message || err.message || 'Failed to load chat';
+        throw err;
+      }
+    },
+
+    async loadConversation() {
+      try {
+        const response = await axios.post('/api/messages/conversation', {
           user1Id: this.currentUserId,
-          user2Id: Number(this.$route.params.psyId),
-        };
-        const { data } = await axios.post('/api/messages/conversation', payload);
-        this.conversation = data;
-      },
-      async sendMessage() {
-        if (!this.newMessageText.trim()) return;
+          user2Id: parseInt(this.$route.params.psyId)
+        }, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+
+        this.conversation = response.data || [];
+      } catch (err) {
+        console.error('Error loading conversation:', err);
+        this.error = err.response?.data?.message || 'Failed to load messages';
+        this.conversation = [];
+      }
+    },
+
+    async sendMessage() {
+      if (!this.newMessageText.trim() || this.isSending) return;
+
+      this.isSending = true;
+      try {
         await axios.post('/api/messages/send', {
           senderId: this.currentUserId,
-          receiverId: Number(this.$route.params.psyId),
-          message: this.newMessageText,
+          receiverId: parseInt(this.$route.params.psyId),
+          message: this.newMessageText.trim()
+        }, {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          }
         });
+
         this.newMessageText = '';
         await this.loadConversation();
         this.$nextTick(this.scrollToBottom);
-      },
-      scrollToBottom() {
-        const el = this.$refs.body;
-        if (el) el.scrollTop = el.scrollHeight;
-      },
-      formatTime(ts) {
-        return new Date(ts).toLocaleString();
-      },
+      } catch (err) {
+        console.error('Error sending message:', {
+          error: err.response?.data,
+          config: err.config
+        });
+        alert(`Error: ${err.response?.data?.message || err.message}`);
+      } finally {
+        this.isSending = false;
+      }
+    },
+
+    scrollToBottom() {
+      const container = this.$refs.chatBody;
+      if (container) {
+        container.scrollTop = container.scrollHeight;
+      }
+    },
+
+    formatTime(timestamp) {
+      if (!timestamp) return '';
+      return new Date(timestamp).toLocaleTimeString([], {
+        hour: '2-digit',
+        minute: '2-digit'
+      });
     }
-  };
-  </script>
+  }
+};
+</script>
+
+
   
   <style scoped>
   .messages-container {
