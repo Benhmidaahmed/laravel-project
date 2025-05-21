@@ -222,7 +222,8 @@ onMounted(fetchThreads)
 </script>
 
 <style scoped>
-.new-comment-row {
+ 
+  .new-comment-row {
   display: flex;
   align-items: center;
   gap: 0.7rem;
@@ -267,7 +268,7 @@ onMounted(fetchThreads)
   background: #f7fafd;
 }
 
-.back-btn {
+  .back-btn {
   margin-top: 1.1rem;
   background: #4b8ef1;
   color: #fff;
@@ -285,7 +286,7 @@ onMounted(fetchThreads)
   background: #4b8ef1;
 }
 
-.forum-chat-wrapper {
+  .forum-chat-wrapper {
   display: flex;
   height: 90vh;
   min-height: 540px;
@@ -402,7 +403,7 @@ onMounted(fetchThreads)
   height: 100%;
   display: flex;
   flex-direction: column;
-  padding: 2.5rem 3rem 1.8rem 3rem;
+  padding: 2.5rem 3rem 1.8rem 3rem; /* Spacing around main area */
   min-width: 0;
 }
 
@@ -492,15 +493,15 @@ onMounted(fetchThreads)
   box-shadow: 0 1px 8px rgba(80, 118, 255, 0.04);
   padding: 1rem 0.2rem 0.5rem 0.2rem;
   margin-bottom: 0.2rem;
-  height: 34vh;
-  max-height: 38vh;
+  height: 34vh;          /* <<<< ADJUST THIS TO MAKE COMMENTS ZONE TALLER/SHORTER */
+  max-height: 38vh;      /* <<<< MAX HEIGHT FOR COMMENTS ZONE */
   position: relative;
 }
 .comments-list {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  max-height: 26vh;
+  max-height: 26vh;      /* <<<< ADJUST THIS FOR COMMENTS LIST HEIGHT (controls scroll area) */
   overflow-y: auto; 
   margin-bottom: 1.1rem;
 }
@@ -585,4 +586,6 @@ onMounted(fetchThreads)
   .forum-main { padding: 0.5rem 0; }
   .thread-content { padding: 1.3rem 0.2rem 1rem 0.2rem; }
 }
-</style>
+
+  </style>
+  

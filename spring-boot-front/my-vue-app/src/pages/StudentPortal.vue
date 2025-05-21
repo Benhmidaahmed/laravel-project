@@ -27,12 +27,24 @@
             <!-- ***** Logo End ***** -->
             <!-- ***** Menu Start ***** -->
             <ul class="nav">
-              <li class="scroll-to-section"><a href="#top" class="active">Home</a></li>
-              <li class="scroll-to-section"><a href="#services">Services</a></li>
-              <li class="scroll-to-section"><a href="#about">About</a></li>
-              <li class="scroll-to-section"><a href="#pricing">Pyschologists</a></li>
-              <li class="scroll-to-section"><a href="#newsletter">Newsletter</a></li>
-              <li><div class="gradient-button"><a id="modal_trigger" href="#modal"><i class="fa fa-sign-in-alt"></i> Sign out </a></div></li> 
+<li class="scroll-to-section">
+  <a href="#top" @click.prevent="scrollTo('top')">Home</a>
+</li>
+<li class="scroll-to-section">
+  <a href="#services" @click.prevent="scrollTo('services')">Services</a>
+</li>
+<li class="scroll-to-section">
+  <a href="#about" @click.prevent="scrollTo('about')">About</a>
+</li>
+<li class="scroll-to-section">
+  <a href="#pricing" @click.prevent="scrollTo('pricing')">Psychologists</a>
+</li>
+<li class="scroll-to-section">
+  <a href="#newsletter" @click.prevent="scrollTo('newsletter')">Newsletter</a>
+</li>
+
+
+              <li><div class="gradient-button"><a id="modal_trigger"  @click.prevent="handleLogout"><i class="fa fa-sign-in-alt"></i> Sign out </a></div></li> 
             </ul>        
             <a class='menu-trigger'>
                 <span>Menu</span>
@@ -73,7 +85,7 @@
 
             <div class="action_btns">
                 <div class="one_half"><a href="#" id="login_form" class="btn">Login</a></div>
-                <div class="one_half last"><a href="#" id="register_form" class="btn">Sign up</a></div>
+                <div class="one_half last"><a href="#" id="register_form"  class="btn">Sign up</a></div>
             </div>
         </div>
 
@@ -561,6 +573,7 @@ export default {
     }
   }
   ,
+  
   mounted() {
     axios.get('http://localhost:8084/api/psychologists')
       .then(({ data }) => {
@@ -597,6 +610,7 @@ export default {
       }
       return a;
     },
+    
   getImageUrl(path) {
     // 1. Si pas de chemin, retourne une image par défaut
     if (!path) return '/default-avatar.png';
@@ -671,8 +685,47 @@ export default {
         }
       });
     },
+    async handleLogout() {
+  try {
+    const response = await axios.post('/api/logout', {}, {
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`,
+        'Accept': 'application/json'
+      },
+      withCredentials: true
+    });
+    
+    console.log('Logout response:', response.data); // Debug
+    
+    // Nettoyage
+    ['token', 'userRole', 'userId'].forEach(key => localStorage.removeItem(key));
+    
+    // Force un rechargement complet
+    window.location.href = '/';
+  } catch (error) {
+    console.error('Logout error:', {
+      message: error.response?.data?.message || error.message,
+      status: error.response?.status,
+      headers: error.config?.headers
+    });
+    
+    // Fallback si l'API échoue
+    localStorage.clear();
+    window.location.href = '/';
+  }
+}
     
   }
+  ,scrollTo(sectionId) {
+    // Solution simple avec scroll natif
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ 
+        behavior: 'smooth',
+        block: 'start' 
+      });
+    }
+  },
 };
 </script>
 <style  >

@@ -81,14 +81,15 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
+  console.log(`Navigation de ${from.path} vers ${to.path}`); // [!code ++]
   const token = localStorage.getItem('token');
-  if (to.meta.requiresGuest && token) {
-    next('/dashboard');
-    return;
-  }
+  console.log("Token trouvé:", token ? "Oui" : "Non"); // [!code ++]
+
   if (to.meta.requiresAuth && !token) {
+    console.log("Accès refusé - Redirection vers /"); // [!code ++]
     next('/');
   } else {
+    console.log("Accès autorisé"); // [!code ++]
     next();
   }
 });

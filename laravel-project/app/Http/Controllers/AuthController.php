@@ -91,13 +91,19 @@ class AuthController extends Controller
         return $this->respondWithToken(JWTAuth::refresh());
     }
 
-    protected function respondWithToken($token)
-    {
-        return response()->json([
-            'access_token' => $token,
-            'token_type' => 'bearer',
-            'expires_in' => JWTAuth::factory()->getTTL() * 60,
-            'user' => JWTAuth::user(),
-        ]);
-    }
+   protected function respondWithToken($token)
+{
+    $user = JWTAuth::user(); // Récupère l'utilisateur authentifié
+
+    return response()->json([
+        'access_token' => $token,
+        'token_type' => 'bearer',
+        'expires_in' => JWTAuth::factory()->getTTL() * 60,
+        'user' => $user,
+        // Ajoutez ces champs :
+        'token' => $token, // Champ attendu par le frontend
+        'role' => $user->roles, // Assurez-vous que 'roles' existe dans votre modèle User
+        'user_id' => $user->id,
+    ]);
+}
 }
