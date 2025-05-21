@@ -264,9 +264,11 @@ const handleLogin = async () => {
     });
 
     // Store authentication data
-    localStorage.setItem('token', response.data.token);
+   localStorage.setItem('token', response.data.token);
     localStorage.setItem('userRole', response.data.role);
     localStorage.setItem('userId', response.data.user_id);
+    localStorage.setItem('first_name',response.data.user.first_name);
+    localStorage.setItem('email',response.data.user.email);
     
     loginMessage.value = 'Login successful!';
     loginSuccess.value = true;

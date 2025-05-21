@@ -42,14 +42,14 @@
           <div class="formbg">
             <div class="formbg-inner padding-horizontal--48">
               <form id="stripe-login" @submit.prevent="submitForm">
-                <div class="field padding-bottom--24">
+                <!-- <div class="field padding-bottom--24">
                   <label for="email">Student name :</label>
                   <input v-model="client" required />
                 </div>
                 <div class="field padding-bottom--24">
                     <label for="email">E-mail :</label>
                     <input type="email" v-model="email" required />
-                </div>
+                </div> -->
                 <div class="field padding-bottom--24">
                 <label>Date & Time :</label>
                 <input type="datetime-local" v-model="date" required />
@@ -90,8 +90,12 @@ export default {
     async submitForm() {
         try {
         const payload = {
-    client: this.client,
-    email: this.email,
+    client: localStorage.first_name,
+    email: localStorage.email,
+    date: new Date(this.date).toISOString(),
+    userId: this.psyId,
+    status: 'pending' // or 'confirmed' as neededclient: this.client,
+  ,
     date: new Date(this.date).toISOString(),
     userId: this.psyId,
     status: 'pending' // or 'confirmed' as needed
