@@ -304,7 +304,7 @@
           <div
             v-for="msg in conversation"
             :key="msg.id"
-            :class="['message', msg.sender.id === currentUserId ? 'sent' : 'received']"
+            :class="['message', msg.sender_id === currentUserId ? 'sent' : 'received']"
           >
             <p>{{ msg.content }}</p>
             <span class="ts">{{ formatTime(msg.timestamp) }}</span>
